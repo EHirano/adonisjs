@@ -14,6 +14,11 @@ async function runMigrations() {
     stdio: 'inherit',
   })
 }
+async function rollbackMigrations() {
+  await execa.node('ace', ['migration:rollback'], {
+    stdio: 'inherit',
+  })
+}
 
 async function startHttpServer() {
   const { Ignitor } = await import('@adonisjs/core/build/src/Ignitor')
@@ -26,5 +31,6 @@ async function startHttpServer() {
  */
 configure({
   files: ['test/**/*.spec.ts'],
-  before: [startHttpServer],
+  before: [runMigrations, startHttpServer],
+  after: [rollbackMigrations],
 })
