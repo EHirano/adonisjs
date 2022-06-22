@@ -1,7 +1,8 @@
-import { UserFactory } from './../../database/factories/index'
+import Database from '@ioc:Adonis/Lucid/Database'
 import test from 'japa'
 import supertest from 'supertest'
-import Database from '@ioc:Adonis/Lucid/Database'
+
+import { UserFactory } from './../../database/factories/index'
 
 const BASE_URL = `http://${process.env.HOST}:${process.env.PORT}`
 
@@ -23,7 +24,7 @@ test.group('User', (group) => {
     assert.equal(body.user.avatar, userPayload.avatar)
   })
 
-  test.only('it should return 409 when email is already in use', async (assert) => {
+  test('it should return 409 when email is already in use', async (assert) => {
     const { email } = await UserFactory.create()
     const { body } = await supertest(BASE_URL)
       .post('/users')
@@ -36,6 +37,23 @@ test.group('User', (group) => {
 
     assert.exists(body.message)
     assert.include(body.message, 'email')
+    // assert.equal(body.code, 'BAD_REQUEST')
+    // assert.equal(body.status, 409)
+  })
+
+  test.only('it should return 409 when username is already in use', async (assert) => {
+    const { username } = await UserFactory.create()
+    const { body } = await supertest(BASE_URL)
+      .post('/users')
+      .send({
+        username,
+        email: 'test@test.com',
+        password: 'test',
+      })
+      .expect(409)
+
+    assert.exists(body.message)
+    assert.include(body.message, 'username')
     // assert.equal(body.code, 'BAD_REQUEST')
     // assert.equal(body.status, 409)
   })
