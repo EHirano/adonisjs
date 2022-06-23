@@ -24,7 +24,7 @@ export default class ExceptionHandler extends HttpExceptionHandler {
   }
 
   public async handle(error: Exception, ctx: HttpContextContract) {
-    if (error.status === 402)
+    if (error.status === 422)
       return ctx.response.status(error.status).send({
         code: 'BAD_REQUEST',
         message: error.message,

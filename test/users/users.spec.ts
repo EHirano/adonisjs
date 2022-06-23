@@ -1,7 +1,7 @@
+import Hash from '@ioc:Adonis/Core/Hash'
 import Database from '@ioc:Adonis/Lucid/Database'
 import test from 'japa'
 import supertest from 'supertest'
-import Hash from '@ioc:Adonis/Core/Hash'
 
 import { UserFactory } from './../../database/factories/index'
 
@@ -21,7 +21,7 @@ test.group('User', (group) => {
     assert.exists(body.user.id, 'Id undefined')
     assert.equal(body.user.email, userPayload.email)
     assert.equal(body.user.username, userPayload.username)
-    assert.notExists(body.user.password, 'Password defined')
+    assert.notExists(body.user.password, 'Password undefined')
   })
 
   test('it should return 409 when email is already in use', async (assert) => {
@@ -37,8 +37,8 @@ test.group('User', (group) => {
 
     assert.exists(body.message)
     assert.include(body.message, 'email')
-    // assert.equal(body.code, 'BAD_REQUEST')
-    // assert.equal(body.status, 409)
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 409)
   })
 
   test('it should return 409 when username is already in use', async (assert) => {
@@ -51,17 +51,16 @@ test.group('User', (group) => {
         password: 'test',
       })
       .expect(409)
-    console.log({ body: JSON.stringify(body) })
+
     assert.exists(body.message)
     assert.include(body.message, 'username')
-    // assert.equal(body.code, 'BAD_REQUEST')
-    // assert.equal(body.status, 409)
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 409)
   })
 
   test('it should return 422 when required data is not provided', async (assert) => {
     const { body } = await supertest(BASE_URL).post('/users').send({}).expect(422)
 
-    console.log({ body: JSON.stringify(body) })
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
   })
@@ -76,7 +75,6 @@ test.group('User', (group) => {
       })
       .expect(422)
 
-    console.log({ body: JSON.stringify(body) })
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
   })
@@ -91,7 +89,6 @@ test.group('User', (group) => {
       })
       .expect(422)
 
-    console.log({ body: JSON.stringify(body) })
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
   })
@@ -116,7 +113,7 @@ test.group('User', (group) => {
     assert.equal(body.user.id, id)
   })
 
-  test.only('it should update the password of the user', async (assert) => {
+  test('it should update the password of the user', async (assert) => {
     const user = await UserFactory.create()
     const password = 'test'
 
@@ -135,6 +132,57 @@ test.group('User', (group) => {
     // .refresh is a Lucid method that goes into the database and refreshes the current data
     await user.refresh()
     assert.isTrue(await Hash.verify(user.password, password))
+  })
+
+  test('it should return 422 when required data is not provided', async (assert) => {
+    const { id } = await UserFactory.create()
+    const { body } = await supertest(BASE_URL).put(`/users/${id}`).send({}).expect(422)
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 422)
+  })
+
+  test('it should return 422 when providing an invalid email', async (assert) => {
+    const { id, password, avatar } = await UserFactory.create()
+    const { body } = await supertest(BASE_URL)
+      .put(`/users/${id}`)
+      .send({
+        password,
+        avatar,
+        email: 'test@',
+      })
+      .expect(422)
+
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 422)
+  })
+  test('it should return 422 when providing an invalid password', async (assert) => {
+    const { id, email, avatar } = await UserFactory.create()
+    const { body } = await supertest(BASE_URL)
+      .put(`/users/${id}`)
+      .send({
+        email,
+        avatar,
+        password: 'tes',
+      })
+      .expect(422)
+
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 422)
+  })
+
+  test('it should return 422 when providing an invalid avatar', async (assert) => {
+    const { id, email, password } = await UserFactory.create()
+    const { body } = await supertest(BASE_URL)
+      .put(`/users/${id}`)
+      .send({
+        email,
+        password,
+        avatar: 'test',
+      })
+      .expect(422)
+
+    assert.equal(body.code, 'BAD_REQUEST')
+    assert.equal(body.status, 422)
   })
 
   group.beforeEach(async () => {
