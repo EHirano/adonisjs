@@ -11,7 +11,7 @@ test.group('Password', (group) => {
   test.only('it should send an email with forgot password instructions', async (assert) => {
     const user = await UserFactory.create()
 
-    const fakeMailer = Mail.fake(['smtp'])
+    const mailer = Mail.fake(['smtp'])
 
     await supertest(BASE_URL)
       .post('/forgot-password')
@@ -21,11 +21,26 @@ test.group('Password', (group) => {
       })
       .expect(204)
 
+    const message = mailer.find((mail) => {
+      return mail.to![0].address === user.email
+    })
+
     assert.isTrue(
-      fakeMailer.exists((mail) => {
+      mailer.exists((mail) => {
         return mail.subject === 'Roleplay: Recuperação de Senha'
       })
     )
+
+    assert.deepEqual(message?.from, { address: 'no-reply@roleplay.com', name: '' })
+
+    assert.deepEqual(message?.to, [
+      {
+        address: user.email,
+        name: '',
+      },
+    ])
+
+    assert.include(message!.html!, user.username)
 
     Mail.restore()
   })
