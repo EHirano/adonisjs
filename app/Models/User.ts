@@ -1,9 +1,9 @@
 import Hash from '@ioc:Adonis/Core/Hash'
 import { BaseModel, beforeSave, column, hasMany, HasMany } from '@ioc:Adonis/Lucid/Orm'
-import LinkTokens from 'App/Models/LinkTokens'
+import LinkToken from 'App/Models/LinkToken'
 import { DateTime } from 'luxon'
 
-export default class Users extends BaseModel {
+export default class User extends BaseModel {
   @column({ isPrimary: true })
   public id: number
 

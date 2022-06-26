@@ -1,4 +1,5 @@
 import { Exception } from '@adonisjs/core/build/standalone'
+import HttpExceptionHandler from '@ioc:Adonis/Core/HttpExceptionHandler'
 /*
 |--------------------------------------------------------------------------
 | Http Exception Handler
@@ -15,7 +16,7 @@ import { Exception } from '@adonisjs/core/build/standalone'
 */
 
 import Logger from '@ioc:Adonis/Core/Logger'
-import HttpExceptionHandler from '@ioc:Adonis/Core/HttpExceptionHandler'
+
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 export default class ExceptionHandler extends HttpExceptionHandler {
@@ -30,6 +31,12 @@ export default class ExceptionHandler extends HttpExceptionHandler {
         message: error.message,
         status: error.status,
         errors: error['messages']?.errors ? error['messages'].error : '',
+      })
+    else if (error.code === 'E_ROW_NOT_FOUND')
+      return ctx.response.status(error.status).send({
+        code: 'BAD_REQUEST',
+        message: 'resource not found',
+        status: 404,
       })
     return super.handle(error, ctx)
   }

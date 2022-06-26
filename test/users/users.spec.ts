@@ -183,6 +183,7 @@ test.group('User', (group) => {
 
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
+    assert.equal(body.message, 'Token has expired')
   })
 
   group.beforeEach(async () => {
