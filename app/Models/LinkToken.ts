@@ -1,5 +1,5 @@
 import { BaseModel, belongsTo, BelongsTo, column } from '@ioc:Adonis/Lucid/Orm'
-import User from 'App/Models/User'
+import User from './User'
 import { DateTime } from 'luxon'
 
 export default class LinkToken extends BaseModel {
