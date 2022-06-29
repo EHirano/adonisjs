@@ -38,11 +38,11 @@ test.group('Session', (group) => {
     assert.equal(body.status, 400)
   })
 
-  test('it should return 400 when credentials are invalid are invalid', async (assert) => {
+  test('it should return 400 when credentials are invalid', async (assert) => {
     const { email } = await UserFactory.create()
     const { body } = await supertest(BASE_URL)
       .post('/sessions')
-      .send({ email, password: 'wrong password' })
+      .send({ email, password: 'test' })
       .expect(400)
 
     assert.equal(body.code, 'BAD_REQUEST')
@@ -50,7 +50,7 @@ test.group('Session', (group) => {
     assert.equal(body.message, 'invlaid credentials')
   })
 
-  test.only('it should return 200 when user signs out', async (assert) => {
+  test('it should return 200 when user signs out', async (assert) => {
     const plainPassword = 'test'
     const { email } = await UserFactory.merge({ password: plainPassword }).create()
     const { body } = await supertest(BASE_URL)

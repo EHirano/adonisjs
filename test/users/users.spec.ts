@@ -7,6 +7,8 @@ import { UserFactory } from './../../database/factories/index'
 
 const BASE_URL = `http://${process.env.HOST}:${process.env.PORT}`
 
+let token = ''
+
 test.group('User', (group) => {
   test('it should create an user', async (assert) => {
     const userPayload = {
@@ -100,6 +102,7 @@ test.group('User', (group) => {
 
     const { body } = await supertest(BASE_URL)
       .put(`/users/${id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         email,
         avatar,
@@ -119,6 +122,7 @@ test.group('User', (group) => {
 
     const { body } = await supertest(BASE_URL)
       .put(`/users/${user.id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         email: user.email,
         avatar: user.avatar,
@@ -136,7 +140,11 @@ test.group('User', (group) => {
 
   test('it should return 422 when required data is not provided', async (assert) => {
     const { id } = await UserFactory.create()
-    const { body } = await supertest(BASE_URL).put(`/users/${id}`).send({}).expect(422)
+    const { body } = await supertest(BASE_URL)
+      .put(`/users/${id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({})
+      .expect(422)
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
   })
@@ -145,6 +153,7 @@ test.group('User', (group) => {
     const { id, password, avatar } = await UserFactory.create()
     const { body } = await supertest(BASE_URL)
       .put(`/users/${id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         password,
         avatar,
@@ -155,10 +164,12 @@ test.group('User', (group) => {
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
   })
+
   test('it should return 422 when providing an invalid password', async (assert) => {
     const { id, email, avatar } = await UserFactory.create()
     const { body } = await supertest(BASE_URL)
       .put(`/users/${id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         email,
         avatar,
@@ -174,6 +185,7 @@ test.group('User', (group) => {
     const { id, email, password } = await UserFactory.create()
     const { body } = await supertest(BASE_URL)
       .put(`/users/${id}`)
+      .set('Authorization', `Bearer ${token}`)
       .send({
         email,
         password,
@@ -184,6 +196,17 @@ test.group('User', (group) => {
     assert.equal(body.code, 'BAD_REQUEST')
     assert.equal(body.status, 422)
     assert.equal(body.message, 'Token has expired')
+  })
+
+  group.before(async () => {
+    const plainPassword = 'test'
+    const { email } = await UserFactory.merge({ password: plainPassword }).create()
+    const { body } = await supertest(BASE_URL)
+      .post('/sessions')
+      .send({ email, password: plainPassword })
+      .expect(201)
+
+    token = body.token.token
   })
 
   group.beforeEach(async () => {

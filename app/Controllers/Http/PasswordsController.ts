@@ -13,7 +13,9 @@ export default class PasswordsController {
     const user = await User.findByOrFail('email', email)
 
     const random = await promisify(randomBytes)(24)
+    console.log(random)
     const token = random.toString('hex')
+    console.log(token)
     await user.related('tokens').updateOrCreate(
       { userId: user.id },
       {
