@@ -16,6 +16,7 @@ export default class PasswordsController {
     console.log(random)
     const token = random.toString('hex')
     console.log(token)
+
     await user.related('tokens').updateOrCreate(
       { userId: user.id },
       {
