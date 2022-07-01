@@ -48,7 +48,7 @@ test.group('Password', (group) => {
   })
 
   // review this test - it is not providing correctly the token
-  test.only('it should create a reset password token', async (assert) => {
+  test('it should create a reset password token', async (assert) => {
     const user = await UserFactory.create()
 
     await supertest(BASE_URL)
@@ -60,7 +60,6 @@ test.group('Password', (group) => {
       .expect(204)
 
     const tokens = await user.related('tokens').query()
-    console.log({ tokens })
     assert.isNotEmpty(tokens)
   })
 
